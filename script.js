@@ -17,6 +17,8 @@ function displayUI(item) {
   const explanation = document.createElement("p");
   explanation.innerText = item.explanation;
   container.append(date, img, title, explanation);
+  addSearchToHistory();
+
 }
 
 // current image of day on load
@@ -31,6 +33,7 @@ async function getCurrentImageOfTheDay() {
     const data = await response.json();
 
     console.log(data);
+
     container.innerText = "";
     displayUI(data);
   } catch (error) {
@@ -44,41 +47,46 @@ function saveSearch(date) {
   if (!arr.includes(date)) {
     arr.push(date);
     localStorage.setItem("searches", JSON.stringify(arr));
+    addSearchToHistory();
   }
 }
 
+
+function displayAddedSearchUI(arr) {
+    const ul = document.createElement("ul");
+
+    arr.forEach((ele) => {
+      console.log(ele);
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = ele;
+      a.innerText = ele;
+  
+      li.style = "none";
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+  
+    historyList.appendChild(ul);
+  
+    ul.addEventListener("click", (event) => {
+      // check if the clicked element is a link
+      if (event.target.tagName === "A") {
+        // prevent the default link behavior
+        event.preventDefault();
+        // get the date from the link's text
+        const date = event.target.innerText;
+        // call the getImageOfTheDay function with the date
+        getImageOfTheDay(date);
+      }
+    });
+}
 // search history
 function addSearchToHistory() {
   historyList.innerText = "";
   const arr = JSON.parse(localStorage.getItem("searches")) || [];
   console.log(arr);
-  const ul = document.createElement("ul");
-
-  arr.forEach((ele) => {
-    console.log(ele);
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = ele;
-    a.innerText = ele;
-
-    li.style = "none";
-    li.appendChild(a);
-    ul.appendChild(li);
-  });
-
-  historyList.appendChild(ul);
-
-  ul.addEventListener("click", (event) => {
-    // check if the clicked element is a link
-    if (event.target.tagName === "A") {
-      // prevent the default link behavior
-      event.preventDefault();
-      // get the date from the link's text
-      const date = event.target.innerText;
-      // call the getImageOfTheDay function with the date
-      getImageOfTheDay(date);
-    }
-  });
+  displayAddedSearchUI(arr);
 }
 
 // getImage for particular date
@@ -93,6 +101,7 @@ async function getImageOfTheDay(date) {
     // console.log(data);
     container.innerText = "";
     displayUI(data);
+    addSearchToHistory();
   } catch (error) {
     console.error(error);
   }
